@@ -12,7 +12,7 @@ var app = express();
 app.use(bodyParser.json());//this is middleware telling the app to use bodyParser to parse all JSON requests. 
 
 app.post('/todos', (req,res)=> {
-    console.log(req.body)//the body gets stored by the bodyParser
+    //console.log(req.body)//the body gets stored by the bodyParser
     var todo = new Todo({
         text: req.body.text
     })
@@ -26,6 +26,8 @@ app.post('/todos', (req,res)=> {
 app.listen(3000, () => {
     console.log("Listening to port 3000")
 })
+
+module.exports = {app}//export the app so that it is available to other files
 
 // var newUser = new user({
 //     name: "Peyman",
