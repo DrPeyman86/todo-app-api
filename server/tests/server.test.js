@@ -2,16 +2,21 @@ const expect = require('expect');
 const express = require('express');
 //const request = require('request');
 const request = require('supertest');
+const {ObjectID} = require('mongodb')
 
 
 const {app} = require('./../server');
 const {Todo} = require('./../models/todo');
 
 const todos = [{
+    _id: new ObjectID(),//used for the Get/ todo/id test because we need to know the id that will be inserted into collection
     text: "First todos"
 }, {
+    _id: new ObjectID(),
     text: "Second todos"
 }]
+
+//var test_id = new ObjectID();
 
 //testing lifecycle method -
 //beforeEach runs before each test, before each .it()
@@ -83,5 +88,33 @@ describe('GET /todos', () => {
                 expect(res.body.todos.length).toBe(2);
             })
             .end((done))
+    })
+})
+
+describe('GET /todos/id', () => {
+    it('should return todo doc', (done) => {
+        request(app)
+            .get(`/todos/${todos[0]._id.toHexString()}`)//this will make a request to this URL with the first [0] position of the 
+            //todos array and its _id property. Convert to hexString() to convert it from object to string
+            .expect(200)
+            .expect((res)=> {
+                expect(res.body.todo.text).toBe(todos[0].text)
+            })
+            .end(done)
+    })
+
+    it('should return a 404 for none found in collection', (done) => {
+        var hex_id = new ObjectID().toHexString();
+        request(app)
+            .get(`/todos/${hex_id}`)
+            .expect(404)
+            .end(done)
+    })
+
+    it('should return a 404 for invalid ObjectID', (done) => {
+        request(app)
+            .get('/todos/12133113')
+            .expect(404)
+            .end(done)
     })
 })

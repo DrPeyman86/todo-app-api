@@ -1,10 +1,12 @@
+const {ObjectID} = require('mongodb');
+
 var express = require('express')
 var bodyParser = require('body-parser')
 var {mongoose} = require('./db/mongoose')
 
 
 var {Todo} = require('./models/todo')
-var {user} = require('./models/users')
+var {User} = require('./models/User')
 
 
 var app = express();
@@ -28,6 +30,46 @@ app.get('/todos', (req, res) => {
         res.send({todos})//sending back and object gives more flexibility rather than an array because
         //you can send along other properties with the object. 
     }, (e)=>{
+        res.status(400).send(e);
+    })
+})
+
+app.get('/todos/:id', (req, res) => {
+    //res.send(req.params)//req.params is the object of params sent through the URL. 
+    var id = req.params.id;
+
+    if(!ObjectID.isValid(id)) {
+        return res.status(404).send('Id is not valid')
+    }
+
+    Todo.findById(id).then((todo)=> {
+        if(!todo) {
+            res.status(404).send('No todo found')
+        }
+        res.status(200).send({todo})
+    }).catch((e)  => {
+        res.status(400).send('Error finding todo');
+    })
+
+})
+
+app.post('/user', (req,res)=> {
+    var user = new User({
+        name: req.body.name,
+        password: req.body.password,
+        email: req.body.email
+    })
+    user.save().then((docs)=> {
+        res.status(200).send(docs);
+    }, (e) => {
+        res.status(400).send(e);
+    })
+})
+
+app.get('/users', (req, res)=> {
+    User.find().then((users)=>{
+        res.send(users)
+    }, (e) => {
         res.status(400).send(e);
     })
 })
