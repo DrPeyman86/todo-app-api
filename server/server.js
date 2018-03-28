@@ -8,6 +8,9 @@ var {mongoose} = require('./db/mongoose')
 var {Todo} = require('./models/todo')
 var {User} = require('./models/User')
 
+const port = process.env.PORT || 3000;//a hosting environment like heroku will set process.env.PORT, so that
+//the app will use that as the port. If it's not defined, when we run locally, it will use regular 3000. 
+
 
 var app = express();
 
@@ -74,8 +77,8 @@ app.get('/users', (req, res)=> {
     })
 })
 
-app.listen(3000, () => {
-    console.log("Listening to port 3000")
+app.listen(port, () => {
+    console.log(`Listening to port ${port}`)
 })
 
 module.exports = {app}//export the app so that it is available to other files
