@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const {ObjectID} = require('mongodb');
 
 var express = require('express')
@@ -8,7 +9,7 @@ var {mongoose} = require('./db/mongoose')
 var {Todo} = require('./models/todo')
 var {User} = require('./models/User')
 
-const port = process.env.PORT || 3000;//a hosting environment like heroku will set process.env.PORT, so that
+const port =     process.env.PORT || 3000;//a hosting environment like heroku will set process.env.PORT, so that
 //the app will use that as the port. If it's not defined, when we run locally, it will use regular 3000. 
 
 
@@ -92,6 +93,35 @@ app.get('/users', (req, res)=> {
         res.send(users)
     }, (e) => {
         res.status(400).send(e);
+    })
+})
+
+app.patch(`/todos/:id`, (req, res) => {
+    var id = req.params.id;
+    //lodash .pick() takes an object as first argument and array as other. 
+    //only properties that exist in the array defined in the first argument will be set. 
+    var body = _.pick(req.body, ["text", "completed"])
+
+    if(!ObjectID.isValid(id)) {
+        return res.status(404).send('Id is not valid')
+    }
+    //_isBoolean checks to see if a value is a boolean type
+    if(_.isBoolean(body.completed) && body.completed) {
+        //if boolean and body.completed is true, set the body.completedAt property to true, which 
+        //will eventually set the Todo model property in the database
+        body.completedAt = new Date().getTime()
+    } else {//if it is not a boolean and body.completed is not true
+        body.completed = false;
+        body.completedAt = null;
+    }
+
+    Todo.findByIdAndUpdate(id, ({$set: body}), {new: true}).then((todo) => {
+        if(!todo) {
+            return res.status(404).send("Id was not found to update");
+        }
+        res.status(200).send(todo)
+    }).catch((err,res)=> {
+        res.status(400).send("Error in process")
     })
 })
 
