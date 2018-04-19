@@ -5,7 +5,7 @@ var mongoose = require('mongoose')
 //tell mongoose which Promise library you want to use.
 //mongoose supports regular callbacks, but promises are simpliar and cleaner
 mongoose.Promise = global.Promise;//use global.Promise for the mongoose
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/TodoApp');
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/TodoApp');//if the MONGODBO_URI exists in the process env use that as the databse, otherwise, use local
 
 
 module.exports = {

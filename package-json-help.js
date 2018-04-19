@@ -28,3 +28,5 @@
     }
   }
   
+  //node -v //lets you see what version of node you are running 
+  

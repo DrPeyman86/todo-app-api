@@ -100,7 +100,7 @@ app.patch(`/todos/:id`, (req, res) => {
     var id = req.params.id;
     //lodash .pick() takes an object as first argument and array as other. 
     //only properties that exist in the array defined in the first argument will be set. 
-    var body = _.pick(req.body, ["text", "completed"])
+    var body = _.pick(req.body, ["text", "completed"])//only allow users to update what exists in this Array and set it to the var body
 
     if(!ObjectID.isValid(id)) {
         return res.status(404).send('Id is not valid')
@@ -119,7 +119,7 @@ app.patch(`/todos/:id`, (req, res) => {
         if(!todo) {
             return res.status(404).send("Id was not found to update");
         }
-        res.status(200).send(todo)
+        res.status(200).send({todo})
     }).catch((err,res)=> {
         res.status(400).send("Error in process")
     })

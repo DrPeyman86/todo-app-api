@@ -1,0 +1,19 @@
+mongodb
+install mongodb mongodb
+using cmd
+go to C:\Program Files\MongoDB\Server\3.6
+go to bin directory
+create a mongo-data directory anywhere you want where data will be stored in that folder. create it in your users directory
+in cmd run
+mongod.exe --dbpath /Users/Peyman/mongo-data //this starts up the server on default 27017 port
+run 
+mongo.exe from a second cmd screen on the same /bin directory
+you can run test by 
+db.Todos.insert({text: 'create new course'})//you should ge WriteResult... back
+db.Todos.find()
+
+create heroku app
+on the app folder execute
+heroku create//this will create the app
+heroku addons:create mongolab:sandbox//this will create a mongodb db using the sandbox membership which is free
+heroku config//this will give you config info for you app. the MONGODB_URI is the path of the db that mLab gave you, which is what you use
