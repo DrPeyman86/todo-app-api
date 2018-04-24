@@ -17,3 +17,9 @@ on the app folder execute
 heroku create//this will create the app
 heroku addons:create mongolab:sandbox//this will create a mongodb db using the sandbox membership which is free
 heroku config//this will give you config info for you app. the MONGODB_URI is the path of the db that mLab gave you, which is what you use
+git push heroku master//will push your app to heroku servers. at the end it will give you the URL to go to 
+heroku open//which will open the app in your browser
+
+
+executing commands 
+npm test - will execute the script in package.json that is specified. 
