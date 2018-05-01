@@ -5,7 +5,10 @@
     "main": "index.js",
     "scripts": {
       "start": "node server/server.js",//this will tell hosting servers like herkou what file to start running first. like application.cfm
-      "test": "mocha server/**/*.test.js",
+      //no need to add NODE_ENV in "start" because start is going to be default production, so it will use the production databse.
+      "test": "export NODE_ENV=test || SET \"NODE_ENV=test\" && mocha server/**/*.test.js",//export NODE_ENV=test will set the NODE_ENV environment before the application runs
+      //export is the command for OSX and LInux machines(heroku is linux). SET is for windows so you want both
+      //this will allow us to use different environments based on what we give here. So we could have different database sources if we are on development, production
       "test-watch": "nodemon --exec \"npm test\""
     },
     "engines": {//engines lets us configure some properties to the http server like heroku

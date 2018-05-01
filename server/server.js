@@ -1,3 +1,5 @@
+require('./config/config'); 
+
 const _ = require('lodash');
 const {ObjectID} = require('mongodb');
 
@@ -9,9 +11,9 @@ var {mongoose} = require('./db/mongoose')
 var {Todo} = require('./models/todo')
 var {User} = require('./models/User')
 
-const port =     process.env.PORT || 3000;//a hosting environment like heroku will set process.env.PORT, so that
+const port =     process.env.PORT// || 3000;//a hosting environment like heroku will set process.env.PORT, so that
 //the app will use that as the port. If it's not defined, when we run locally, it will use regular 3000. 
-
+//removed the // 3000 because we set it before based on what the "env" variable is
 
 var app = express();
 
