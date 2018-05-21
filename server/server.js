@@ -77,12 +77,16 @@ app.delete('/todos/:id', (req, res) => {
     })
 })
 
-app.post('/user', (req,res)=> {
-    var user = new User({
-        name: req.body.name,
-        password: req.body.password,
-        email: req.body.email
-    })
+app.post('/users', (req,res)=> {
+    var body = _.pick(req.body,["name","password","email"])//this will only allow the user request to update what is included in the array. So if you don't want users to update "token" or "completed date" do not include in array
+    
+    // var user = new User({
+    //     name: req.body.name,
+    //     password: req.body.password,
+    //     email: req.body.email
+    // })
+    var user = new User(body)//since body is already an object above, just pass it in as argument to the instance. ANd it will only include properties defined by the _.pick method above
+
     user.save().then((docs)=> {
         res.status(200).send(docs);
     }, (e) => {
@@ -126,6 +130,9 @@ app.patch(`/todos/:id`, (req, res) => {
         res.status(400).send("Error in process")
     })
 })
+
+//POST /users
+
 
 app.listen(port, () => {
     console.log(`Listening to port ${port}`)
