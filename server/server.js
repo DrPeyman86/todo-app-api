@@ -78,7 +78,7 @@ app.delete('/todos/:id', (req, res) => {
 })
 
 app.post('/users', (req,res)=> {
-    var body = _.pick(req.body,["name","password","email"])//this will only allow the user request to update what is included in the array. So if you don't want users to update "token" or "completed date" do not include in array
+    var body = _.pick(req.body,["password","email"])//this will only allow the user request to update what is included in the array. So if you don't want users to update "token" or "completed date" do not include in array
     
     // var user = new User({
     //     name: req.body.name,
@@ -86,10 +86,28 @@ app.post('/users', (req,res)=> {
     //     email: req.body.email
     // })
     var user = new User(body)//since body is already an object above, just pass it in as argument to the instance. ANd it will only include properties defined by the _.pick method above
-
-    user.save().then((docs)=> {
-        res.status(200).send(docs);
-    }, (e) => {
+    
+    //two types of methods calls
+    //User -- where the first letter is capitlaized is a MODEL function. Model methods do not require an individual document
+    //User.findByToken - findByToken does not exist in mongoose, it is a custom method, which we 
+    //we will send token into and find that User. 
+    //user -- where letter is lowercase is INSTANCE. are called on an individual document
+    //user.generateAuthToken -- responsible for adding a token to the individual user object to pass to the server/database.
+    //user.generateAuthToken -- it is a method meant to handle one user at a time, which is why it is an INSTANCE method
+    //console.log('here0000')
+    
+    user.save().then(()=> {
+        //get the return value from the user.generateAuthToken() method
+        return user.generateAuthToken();
+        //res.status(200).send(user);//no need to send the same user as the client gave us.need to send back the user
+        //with the token added
+    }).then((token)=> {
+        //send back the http header back to client, which is the goal
+        res.header('x-auth', token).send(user);//when you create a header with 'x-' you are creating a custom header
+        //which mean the http does not support by default, but it could be used
+        //for your own app
+    }).catch((e) => {
+        console.log(e)
         res.status(400).send(e);
     })
 })

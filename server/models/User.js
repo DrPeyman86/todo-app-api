@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const validator = require('validator')
+const jwt = require('jsonwebtoken')
 
 
 var validateEmail = function(email) {
@@ -18,13 +19,13 @@ var validateEmail = function(email) {
 //     }]
 // }
 
-var User = mongoose.model('User', {
-    name: {
-        type: String,
-        required: true,
-        minLength: 1,
-        trim: true
-    },
+var UserSchema = new mongoose.Schema({
+    // name: {
+    //     type: String,
+    //     required: true,
+    //     minLength: 1,
+    //     trim: true
+    // },
     email: {
         type: String,
         required: true,
@@ -61,7 +62,29 @@ var User = mongoose.model('User', {
             required: true
         }        
     }]
-})
+})//store schema for a User
+
+//it is an object -- these are instance methods -- instace methods are available to access individual document properties
+//because we need that information to create the JWT
+//this is a custom function we created to call through the app
+//which just adds a token property to that array that gets sent to db
+UserSchema.methods.generateAuthToken = function() {
+    var user = this;
+    var access = 'auth';
+    var token = jwt.sign({_id: user.id.toHexString(), access: access},'123Pemy').toString()
+    //add to the user array the token property 
+    user.tokens = user.tokens.concat({access, token})
+    console.log('here1111')
+    //save the user inside the database
+    // the return will allow other files to use the return value 
+    //of this .then() promise which would include the token we could use
+    return user.save().then(()=> {
+        return token
+    })
+        
+}
+
+var User = mongoose.model('User', UserSchema)
 
 
 module.exports = {User}//ES6 format, when the property name and value are same, you can just have one
