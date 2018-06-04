@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const validator = require('validator')
 const jwt = require('jsonwebtoken')
+const _ = require('lodash')
+const bcrypt = require('bcryptjs')
 
 
 var validateEmail = function(email) {
@@ -20,12 +22,12 @@ var validateEmail = function(email) {
 // }
 
 var UserSchema = new mongoose.Schema({
-    // name: {
-    //     type: String,
-    //     required: true,
-    //     minLength: 1,
-    //     trim: true
-    // },
+    name: {
+        type: String,
+        required: true,
+        minLength: 1,
+        trim: true
+    },
     email: {
         type: String,
         required: true,
@@ -64,6 +66,14 @@ var UserSchema = new mongoose.Schema({
     }]
 })//store schema for a User
 
+//override method to determine what gets sent back to the client response
+UserSchema.methods.toJSON = function () {
+    var user = this;
+    var userObject = user.toObject()//taking the mongoose object to regular object where properties name and value exist
+
+    return _.pick(userObject,['_id','email','name','tokens'])//only send back what exists in the pick, so only send the response containing id and email
+}
+
 //it is an object -- these are instance methods -- instace methods are available to access individual document properties
 //because we need that information to create the JWT
 //this is a custom function we created to call through the app
@@ -71,10 +81,10 @@ var UserSchema = new mongoose.Schema({
 UserSchema.methods.generateAuthToken = function() {
     var user = this;
     var access = 'auth';
-    var token = jwt.sign({_id: user.id.toHexString(), access: access},'123Pemy').toString()
+    var token = jwt.sign({_id: user._id.toHexString(), access: access},'123Pemy').toString()
     //add to the user array the token property 
     user.tokens = user.tokens.concat({access, token})
-    console.log('here1111')
+    //console.log('here1111')
     //save the user inside the database
     // the return will allow other files to use the return value 
     //of this .then() promise which would include the token we could use
@@ -83,6 +93,56 @@ UserSchema.methods.generateAuthToken = function() {
     })
         
 }
+//UserScema.statics is kind of like UserSchema.methods except everything you add onto it turns into 
+//a model method rather than an instance method(UserSceuma.methods is instance method)
+UserSchema.statics.findByToken = function (token) {
+    var User = this;//capitalize the User in this case because of model method. Instance method lowercase.
+    var decoded;
+
+    try {
+        decoded = jwt.verify(token, '123Pemy')
+    } catch (e) {
+        // return new Promise((resolve,reject) => {
+        //     reject();
+        // })
+        return Promise.reject()// -- does the same exact thing as 3 lines above except is simpliar. you can also send some value inside of reject which would get set to the "e" value in the catch block
+    }
+    return User.findOne({
+        '_id': decoded._id,
+        'tokens.token': token,
+        'tokens.access': 'auth'
+    })//no error handling of this promise. 
+}
+
+//the .pre is a middlware method that takes an argument of what type of method on the User object
+// you want middleware, in this case, it is "next", so that when user.save() is called anywhere in app
+//it will hit this method first, do something, and then continue with regular .save() method
+UserSchema.pre('save', function (next) {
+    var user = this;
+
+    //check whther password was modified
+    //you do not want to hash a password that is already hashed. 
+    //for example if you have password that is hashed already, but call user.Save() again and update the email
+    //even though the email was updated, this middleware is still going to run first, and it's going to hash 
+    //the hashed value of the password again and again...not good. prevent this by following..
+    
+    //user.isModified('password')//checks on a certain property of the user/document and returns true/flase whether it was modified
+    //only has the password if it was not modified
+    if (user.isModified('password')) { 
+        //user.password
+        bcrypt.genSalt(10, (err,salt)=> {
+            bcrypt.hash(user.password, salt, (err,hash)=> {
+                user.password = hash;
+                next()
+            })
+        })
+
+        //user.password = hash
+        //next();
+    } else {
+        next();
+    }
+})
 
 var User = mongoose.model('User', UserSchema)
 

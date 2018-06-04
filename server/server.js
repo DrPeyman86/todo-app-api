@@ -10,6 +10,7 @@ var {mongoose} = require('./db/mongoose')
 
 var {Todo} = require('./models/todo')
 var {User} = require('./models/User')
+var {authenticate} = require('./middleware/authenticate.js')
 
 const port =     process.env.PORT// || 3000;//a hosting environment like heroku will set process.env.PORT, so that
 //the app will use that as the port. If it's not defined, when we run locally, it will use regular 3000. 
@@ -78,7 +79,7 @@ app.delete('/todos/:id', (req, res) => {
 })
 
 app.post('/users', (req,res)=> {
-    var body = _.pick(req.body,["password","email"])//this will only allow the user request to update what is included in the array. So if you don't want users to update "token" or "completed date" do not include in array
+    var body = _.pick(req.body,["password","email","name"])//this will only allow the user request to update what is included in the array. So if you don't want users to update "token" or "completed date" do not include in array
     
     // var user = new User({
     //     name: req.body.name,
@@ -110,6 +111,25 @@ app.post('/users', (req,res)=> {
         console.log(e)
         res.status(400).send(e);
     })
+})
+
+
+//this will be a private route. this will be require auth meaning token needs to be sent with this request and 
+//the route will find the associated the user and send back the id of that user
+app.get('/users/me',authenticate, (req,res)=>{
+    // var token = req.header('x-auth');
+    // //this is a model method-read up top of model method
+    // User.findByToken(token).then((user)=>{
+    //     if(!user) {
+    //         return Promise.reject();//this will essentially break code and send to the catch block
+    //     }
+    //     res.send(user);
+    // }).catch((e)=> {
+    //    res.status(401).send(); 
+    // })
+    //since the middleware in authenticate.js, just send what was provided by it
+    res.send(req.user);
+
 })
 
 app.get('/users', (req, res)=> {
