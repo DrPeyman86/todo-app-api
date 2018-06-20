@@ -113,6 +113,29 @@ UserSchema.statics.findByToken = function (token) {
         'tokens.access': 'auth'
     })//no error handling of this promise. 
 }
+//create a model to search the user by credentials and send back to client result
+UserSchema.statics.findByCredentials = function (email, password) {
+    var User = this;
+
+    return User.findOne({email})//ES6 format
+        .then((user) => {
+            if(!user) {
+                return Promise.reject()//return a reject to where the method is called so that it will enter its catch() method
+            }
+            //since bcrypt does not support promise returns, do this where create new Promise then wrap bcrypt inside that promise block
+            //so that resolve and reject will be sent back to wherever the method was called
+            return new Promise((resolve,reject) => {
+                //user bcrypt.compare to compare password with User.passwrd hashed
+                bcrypt.compare(password, user.password, (err, res)=>{
+                    if(res) {
+                        resolve(user);//resolve by sending back the user found back to the client
+                    } else {
+                        reject();//reject will reject the promise and send to the catch() block of where this method was called from
+                    }
+                })
+            })
+        })
+}
 
 //the .pre is a middlware method that takes an argument of what type of method on the User object
 // you want middleware, in this case, it is "next", so that when user.save() is called anywhere in app

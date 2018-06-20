@@ -132,6 +132,27 @@ app.get('/users/me',authenticate, (req,res)=>{
 
 })
 
+//POST /users/login (email, password)
+//this post is used to login the user that already has a token, so that they 
+//can be re-authenticated if they login from another device using same email
+app.post('/users/login', (req, res) => {
+    var body = _.pick(req.body, ['email','password'])
+
+    //res.send(body);
+    //pass email and password to find the user based on credentials
+    User.findByCredentials(body.email,body.password).then((user)=> {
+        //res.send(user);//it will enter here only if the user is found
+        //if user is found, generate a new token and send to client. save as when new user was created
+        return user.generateAuthToken().then((token)=> {//send the token determined to .then()
+            res.header('x-auth', token).send(user);//when you create a header with 'x-' you are creating a custom header  
+        })
+    }).catch((e) => {
+        //it will enter catch if no user is found
+        res.status(400).send();
+    })
+})
+
+
 app.get('/users', (req, res)=> {
     User.find().then((users)=>{
         res.send(users)

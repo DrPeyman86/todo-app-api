@@ -268,7 +268,7 @@ describe('POST /users', () => {
                     expect(user.password).toNotBe(password);//are expecting the password to not be 
                     //what is in the database because the database password should be hashed
                     done()
-                })
+                }).catch((e)=> done(e));
             })
     })
 
@@ -294,5 +294,68 @@ describe('POST /users', () => {
             .send({email, password, name})
             .expect(400)
             .end(done);
+    })
+})
+
+describe('POST /users/login', () => {
+    it('should login user and return auth token', (done) => {
+        request(app)
+            .post('/users/login')
+            .send({
+                email: users[1].email,
+                password: users[1].password
+            })
+            .expect(200)
+            //expect the response exists a headers called x-auth
+            .expect((res)=> {
+                expect(res.headers["x-auth"]).toExist();
+            })
+            //call end to start querying the database to check the values of 
+            //the users array with what got inserted into the database
+            .end((err, res) => {
+                if (err) {
+                    return done(err);
+                }
+                //findById searches the query by the ID you provide
+                User.findById(users[1]._id).then((user) => {
+                    //expect that the user found in database includes() the two properties
+                    //that each user should have when they sign up. 
+                    expect(user.tokens[0]).toInclude({
+                        access: 'auth',
+                        token: res.headers["x-auth"]
+                    })
+                    done();
+                }).catch((e)=> done(e)); //catch any error that occurred during the findById promise             
+            })
+    })
+
+    it('should reject invalid login wtih bad credentials', (done) => {
+        request(app)
+            .post('/users/login')
+            .send({
+                email: users[1].email,
+                password: '123Abcdef'//users[1].password
+            })
+            .expect(400)
+            //expect the response to not exist with x-auth header since
+            //no user should have returned using the credentials above
+            .expect((res)=> {
+                expect(res.headers["x-auth"]).toNotExist();
+            })
+            //call end to start querying the database to check the values of 
+            //the users array with what got inserted into the database
+            .end((err, res) => {
+                if (err) {
+                    return done(err);
+                }
+                //findById searches the query by the ID you provide
+                User.findById(users[1]._id).then((user) => {
+                    //expect the user that returns from database to be 0
+                    //since the user should not exist in database. 
+                    expect(user.tokens.length).toBe(0)
+                    done();
+                }).catch((e)=> done(e)); //catch any error that occurred during the findById promise             
+            })
+        
     })
 })
