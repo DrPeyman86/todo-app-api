@@ -93,6 +93,22 @@ UserSchema.methods.generateAuthToken = function() {
     })
         
 }
+
+UserSchema.methods.removeToken = function (token) {
+    var user = this;
+
+    //$pull is a mongodb operator that lets you delete something off of an array based on a certain criteria. so in this case delete the token that matches the token that was passed into this function
+    //tokens is the array and token is the property we are trying to pull. it will delete the entire object, not just the token property.
+    return user.update({
+        $pull: {
+            tokens: {
+                token: token
+            }
+        }
+    })
+}
+
+
 //UserScema.statics is kind of like UserSchema.methods except everything you add onto it turns into 
 //a model method rather than an instance method(UserSceuma.methods is instance method)
 UserSchema.statics.findByToken = function (token) {

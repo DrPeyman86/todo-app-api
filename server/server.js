@@ -191,6 +191,16 @@ app.patch(`/todos/:id`, (req, res) => {
 })
 
 //POST /users
+//call the authenticate middleware to make sure the user is logged in. 
+//authenticate makes the route private, so we know whoever is about to logout, does have authentication with that middleware. 
+app.delete('/users/me/token', authenticate, (req,res) => {
+    //removeToken is an instance method on the user object, which we will make
+    req.user.removeToken(req.token).then(()=> {
+        res.status(200).send();
+    }, ()=> {
+        res.status(400).send();
+    })
+})
 
 
 app.listen(port, () => {

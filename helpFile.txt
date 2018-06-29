@@ -24,6 +24,8 @@ heroku open//which will open the app in your browser
 executing commands 
 npm test - will execute the script in package.json that is specified. 
 
+npm install - will install all dependencies on a local nodes_module folder
+
 
 install packages and save to package.json
 npm install validator --save//the --save installs to package.json
