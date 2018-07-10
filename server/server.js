@@ -20,10 +20,12 @@ var app = express();
 
 app.use(bodyParser.json());//this is middleware telling the app to use bodyParser to parse all JSON requests. 
 
-app.post('/todos', (req,res)=> {
+app.post('/todos', authenticate, (req,res)=> {
     //console.log(req.body)//the body gets stored by the bodyParser
+    //since _creator is required and it assigns the user ObjectID to that property, add it.
     var todo = new Todo({
-        text: req.body.text
+        text: req.body.text,
+        _creator: req.user._id
     })
     todo.save().then((docs)=>{
         res.status(200).send(docs);//send the request back to the user
@@ -32,8 +34,10 @@ app.post('/todos', (req,res)=> {
     })
 })
 
-app.get('/todos', (req, res) => {
-    Todo.find().then((todos)=>{
+app.get('/todos', authenticate, (req, res) => {
+    Todo.find({
+        _creator: req.user._id
+    }).then((todos)=>{
         res.send({todos})//sending back and object gives more flexibility rather than an array because
         //you can send along other properties with the object. 
     }, (e)=>{

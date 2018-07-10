@@ -22,17 +22,23 @@ const users = [{
     _id: userTwoId,
     email: 'peymancttest@seed.com',
     name: 'peyman 2 test',
-    password: 'userTwopasstest'
+    password: 'userTwopasstest',
+    tokens: [{
+        access: 'auth',
+        token: jwt.sign({_id: userTwoId, access: 'auth'}, '123Pemy').toString()
+    }]
 }]
 
 const todos = [{
     _id: new ObjectID(),//used for the Get/ todo/id test because we need to know the id that will be inserted into collection
-    text: "First todos"
+    text: "First todos",
+    _creator: userOneId
 }, {
     _id: new ObjectID(),
     text: "Second todos22",
     completed: true,
-    completedAt: 333
+    completedAt: 333,
+    _creator: userTwoId
 }]
 
 const populateTodos = (done)=> {
