@@ -17,6 +17,10 @@ on the app folder execute
 heroku create//this will create the app
 heroku addons:create mongolab:sandbox//this will create a mongodb db using the sandbox membership which is free
 heroku config//this will give you config info for you app. the MONGODB_URI is the path of the db that mLab gave you, which is what you use
+heroku config:set //you can set certain things relevant to your app. 
+heroku config:set NAME=Peyman//this will set the Name key as part of your heroku config 
+heroku config:set JWT_SECRET//the JWT secret phrase used for hashing your passwords
+heroku config:unset NAME//will unset a config variable. if you want to remove it
 git push heroku master//will push your app to heroku servers. at the end it will give you the URL to go to 
 heroku open//which will open the app in your browser
 
