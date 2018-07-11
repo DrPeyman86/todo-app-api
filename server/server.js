@@ -45,7 +45,7 @@ app.get('/todos', authenticate, (req, res) => {
     })
 })
 
-app.get('/todos/:id', (req, res) => {
+app.get('/todos/:id', authenticate, (req, res) => {
     //res.send(req.params)//req.params is the object of params sent through the URL. 
     var id = req.params.id;
 
@@ -53,7 +53,12 @@ app.get('/todos/:id', (req, res) => {
         return res.status(404).send('Id is not valid')
     }
 
-    Todo.findById(id).then((todo)=> {
+    //Todo.findById(id)//Todo.findById(id) no longer applicable since authenticate we only want 
+    //Todos that are assigned to that user that was authenticated
+    Todo.findOne({
+        _id: id,
+        _creator: req.user._id
+    }).then((todo)=> {
         if(!todo) {
             res.status(404).send('No todo found')
         }
@@ -64,7 +69,7 @@ app.get('/todos/:id', (req, res) => {
 
 })
 
-app.delete('/todos/:id', (req, res) => {
+app.delete('/todos/:id',authenticate, (req, res) => {
     var id = req.params.id;
 
 
@@ -72,7 +77,12 @@ app.delete('/todos/:id', (req, res) => {
         return res.status(404).send('Id is not valid')
     }
 
-    Todo.findByIdAndRemove(id).then((todo)=> {
+    //Todo.findByIdAndRemove(id)//we don't just want to find by Id, we also want to find by creator
+    Todo.findOneAndRemove({
+        _id: id,
+        _creator: req.user._id
+    })
+    .then((todo)=> {
         if(!todo) {
             res.status(404).send('No Id found')
         }
@@ -165,7 +175,7 @@ app.get('/users', (req, res)=> {
     })
 })
 
-app.patch(`/todos/:id`, (req, res) => {
+app.patch(`/todos/:id`,authenticate, (req, res) => {
     var id = req.params.id;
     //lodash .pick() takes an object as first argument and array as other. 
     //only properties that exist in the array defined in the first argument will be set. 
@@ -183,8 +193,12 @@ app.patch(`/todos/:id`, (req, res) => {
         body.completed = false;
         body.completedAt = null;
     }
-
-    Todo.findByIdAndUpdate(id, ({$set: body}), {new: true}).then((todo) => {
+    //findOneANdUpdate
+    //Todo.findByIdAndUpdate(id, ({$set: body}), {new: true}).then((todo) => {
+    Todo.findOneAndUpdate({
+        _id: id,
+        _creator: req.user._id}
+        , ({$set: body}), {new: true}).then((todo) => {
         if(!todo) {
             return res.status(404).send("Id was not found to update");
         }
