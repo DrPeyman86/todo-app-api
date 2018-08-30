@@ -37,3 +37,5 @@ npm install validator --save//the --save installs to package.json
 npm install crypto-js --save//crypto-js provides hashing methods for secure token to server and client
 npm install jsonwebtoken --save//this is better that crypto with lot of the methods easier to write since the concept of web token is not new
 go to jwt.io to validate your tokens and make sure the signature comes back invalid without the secret message.
+npm install sequelize --this provides SQL connection and various SQL commands including making SQL tables into object for ORM frameworks
+npm install tedious -- this npm is needed using sequelize when connecting to a MSSQL database

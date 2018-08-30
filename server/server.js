@@ -69,63 +69,116 @@ app.get('/todos/:id', authenticate, (req, res) => {
 
 })
 
-app.delete('/todos/:id',authenticate, (req, res) => {
+//todo - convert to async/await
+// app.delete('/todos/:id',authenticate, (req, res) => {
+//     var id = req.params.id;
+
+
+//     if(!ObjectID.isValid(id)) {
+//         return res.status(404).send('Id is not valid')
+//     }
+
+//     //Todo.findByIdAndRemove(id)//we don't just want to find by Id, we also want to find by creator
+//     Todo.findOneAndRemove({
+//         _id: id,
+//         _creator: req.user._id
+//     })
+//     .then((todo)=> {
+//         if(!todo) {
+//             res.status(404).send('No Id found')
+//         }
+//         res.status(200).send({todo});
+//     }).catch((e)=> {
+//         res.status(400).send('Error in delete request')
+//     })
+// })
+
+//convert above function to async/await
+app.delete('/todos/:id',authenticate, async (req, res) => {
     var id = req.params.id;
 
 
     if(!ObjectID.isValid(id)) {
         return res.status(404).send('Id is not valid')
     }
-
-    //Todo.findByIdAndRemove(id)//we don't just want to find by Id, we also want to find by creator
-    Todo.findOneAndRemove({
-        _id: id,
-        _creator: req.user._id
-    })
-    .then((todo)=> {
+    try {
+        const todo = await Todo.findOneAndRemove({_id: id,_creator: req.user._id});
         if(!todo) {
             res.status(404).send('No Id found')
         }
         res.status(200).send({todo});
-    }).catch((e)=> {
+    } catch (e) {
         res.status(400).send('Error in delete request')
-    })
+    }
 })
 
-app.post('/users', (req,res)=> {
-    var body = _.pick(req.body,["password","email","name"])//this will only allow the user request to update what is included in the array. So if you don't want users to update "token" or "completed date" do not include in array
+//todo - convert to async/await
+// app.post('/users', (req,res)=> {
+//     var body = _.pick(req.body,["password","email","name"])//this will only allow the user request to update what is included in the array. So if you don't want users to update "token" or "completed date" do not include in array
     
-    // var user = new User({
-    //     name: req.body.name,
-    //     password: req.body.password,
-    //     email: req.body.email
-    // })
-    var user = new User(body)//since body is already an object above, just pass it in as argument to the instance. ANd it will only include properties defined by the _.pick method above
+//     // var user = new User({
+//     //     name: req.body.name,
+//     //     password: req.body.password,
+//     //     email: req.body.email
+//     // })
+//     var user = new User(body)//since body is already an object above, just pass it in as argument to the instance. ANd it will only include properties defined by the _.pick method above
     
-    //two types of methods calls
-    //User -- where the first letter is capitlaized is a MODEL function. Model methods do not require an individual document
-    //User.findByToken - findByToken does not exist in mongoose, it is a custom method, which we 
-    //we will send token into and find that User. 
-    //user -- where letter is lowercase is INSTANCE. are called on an individual document
-    //user.generateAuthToken -- responsible for adding a token to the individual user object to pass to the server/database.
-    //user.generateAuthToken -- it is a method meant to handle one user at a time, which is why it is an INSTANCE method
-    //console.log('here0000')
+//     //two types of methods calls
+//     //User -- where the first letter is capitlaized is a MODEL function. Model methods do not require an individual document
+//     //User.findByToken - findByToken does not exist in mongoose, it is a custom method, which we 
+//     //we will send token into and find that User. 
+//     //user -- where letter is lowercase is INSTANCE. are called on an individual document
+//     //user.generateAuthToken -- responsible for adding a token to the individual user object to pass to the server/database.
+//     //user.generateAuthToken -- it is a method meant to handle one user at a time, which is why it is an INSTANCE method
+//     //console.log('here0000')
     
-    user.save().then(()=> {
-        //get the return value from the user.generateAuthToken() method
-        return user.generateAuthToken();
-        //res.status(200).send(user);//no need to send the same user as the client gave us.need to send back the user
-        //with the token added
-    }).then((token)=> {
-        //send back the http header back to client, which is the goal
-        res.header('x-auth', token).send(user);//when you create a header with 'x-' you are creating a custom header
-        //which mean the http does not support by default, but it could be used
-        //for your own app
-    }).catch((e) => {
+//     user.save().then(()=> {
+//         //get the return value from the user.generateAuthToken() method
+//         return user.generateAuthToken();
+//         //res.status(200).send(user);//no need to send the same user as the client gave us.need to send back the user
+//         //with the token added
+//     }).then((token)=> {
+//         //send back the http header back to client, which is the goal
+//         res.header('x-auth', token).send(user);//when you create a header with 'x-' you are creating a custom header
+//         //which mean the http does not support by default, but it could be used
+//         //for your own app
+//     }).catch((e) => {
+//         console.log(e)
+//         res.status(400).send(e);
+//     })
+// })
+
+
+//turned above function to a async/await function
+app.post('/users', async (req,res)=> {
+    try {
+        const body = _.pick(req.body,["password","email","name"])//this will only allow the user request to update what is included in the array. So if you don't want users to update "token" or "completed date" do not include in array
+    
+        // var user = new User({
+        //     name: req.body.name,
+        //     password: req.body.password,
+        //     email: req.body.email
+        // })
+        const user = new User(body)//since body is already an object above, just pass it in as argument to the instance. ANd it will only include properties defined by the _.pick method above
+        
+        //two types of methods calls
+        //User -- where the first letter is capitlaized is a MODEL function. Model methods do not require an individual document
+        //User.findByToken - findByToken does not exist in mongoose, it is a custom method, which we 
+        //we will send token into and find that User. 
+        //user -- where letter is lowercase is INSTANCE. are called on an individual document
+        //user.generateAuthToken -- responsible for adding a token to the individual user object to pass to the server/database.
+        //user.generateAuthToken -- it is a method meant to handle one user at a time, which is why it is an INSTANCE method
+        //console.log('here0000')
+        await user.save();
+        const token = user.generateAuthToken();
+        res.header('x-auth', token).send(user);
+    } catch(e) {
         console.log(e)
         res.status(400).send(e);
-    })
+    }
+
 })
+
 
 
 //this will be a private route. this will be require auth meaning token needs to be sent with this request and 
@@ -149,21 +202,33 @@ app.get('/users/me',authenticate, (req,res)=>{
 //POST /users/login (email, password)
 //this post is used to login the user that already has a token, so that they 
 //can be re-authenticated if they login from another device using same email
-app.post('/users/login', (req, res) => {
-    var body = _.pick(req.body, ['email','password'])
+// app.post('/users/login', (req, res) => {
+//     var body = _.pick(req.body, ['email','password'])
 
-    //res.send(body);
-    //pass email and password to find the user based on credentials
-    User.findByCredentials(body.email,body.password).then((user)=> {
-        //res.send(user);//it will enter here only if the user is found
-        //if user is found, generate a new token and send to client. save as when new user was created
-        return user.generateAuthToken().then((token)=> {//send the token determined to .then()
-            res.header('x-auth', token).send(user);//when you create a header with 'x-' you are creating a custom header  
-        })
-    }).catch((e) => {
-        //it will enter catch if no user is found
+//     //res.send(body);
+//     //pass email and password to find the user based on credentials
+//     User.findByCredentials(body.email,body.password).then((user)=> {
+//         //res.send(user);//it will enter here only if the user is found
+//         //if user is found, generate a new token and send to client. save as when new user was created
+//         return user.generateAuthToken().then((token)=> {//send the token determined to .then()
+//             res.header('x-auth', token).send(user);//when you create a header with 'x-' you are creating a custom header  
+//         })
+//     }).catch((e) => {
+//         //it will enter catch if no user is found
+//         res.status(400).send();
+//     })
+// })
+
+//turning the above function to an async await function
+app.post('/users/login', async (req, res) => {
+    try {
+        var body = _.pick(req.body, ['email','password'])
+        const user = await User.findByCredentials(body.email,body.password);
+        const token = await user.generateAuthToken();
+        res.header('x-auth', token).send(user);
+    } catch (e) {
         res.status(400).send();
-    })
+    }
 })
 
 
@@ -211,13 +276,25 @@ app.patch(`/todos/:id`,authenticate, (req, res) => {
 //POST /users
 //call the authenticate middleware to make sure the user is logged in. 
 //authenticate makes the route private, so we know whoever is about to logout, does have authentication with that middleware. 
-app.delete('/users/me/token', authenticate, (req,res) => {
-    //removeToken is an instance method on the user object, which we will make
-    req.user.removeToken(req.token).then(()=> {
+// app.delete('/users/me/token', authenticate, (req,res) => {
+//     //removeToken is an instance method on the user object, which we will make
+//     req.user.removeToken(req.token).then(()=> {
+//         res.status(200).send();
+//     }, ()=> {
+//         res.status(400).send();
+//     })
+// })
+
+//turn the function above to a async await function 
+//async will return a promise, not a value. Having no return keyword, we are implicity returning an resolve undefined.
+app.delete('/users/me/token', authenticate, async (req,res) => {
+    //do not need a const or let value because we are not sending back a value, just want to know if it passed or failed
+    try {
+    await req.user.removeToken(req.token);
         res.status(200).send();
-    }, ()=> {
+    } catch (e) {
         res.status(400).send();
-    })
+    }
 })
 
 
