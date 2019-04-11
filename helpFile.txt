@@ -39,3 +39,8 @@ npm install jsonwebtoken --save//this is better that crypto with lot of the meth
 go to jwt.io to validate your tokens and make sure the signature comes back invalid without the secret message.
 npm install sequelize --this provides SQL connection and various SQL commands including making SQL tables into object for ORM frameworks
 npm install tedious -- this npm is needed using sequelize when connecting to a MSSQL database
+npm install -g angular/cli -- this will install the angular using terminal rather than including it in your source file. 
+
+//angular/cli 
+//ng new <whatever your project name> then ENTER
+//ng serve -- this will bring up adevelopment server to preview your application. it gives a real web server to view the application
